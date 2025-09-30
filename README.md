@@ -1,2 +1,2 @@
-# eds223-in-class-labs
-Repository conatining weekly lab in EDS 223.
+# EDS223: Geospatial Analysis & Remote Sensing In-class labs
+Repository conatining weekly labs in EDS 223.
