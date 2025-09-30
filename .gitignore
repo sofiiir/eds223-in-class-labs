@@ -47,3 +47,8 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Ignoring week 1 data
+week1/data/
+
+.DS_Store
