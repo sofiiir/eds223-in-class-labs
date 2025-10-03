@@ -1,0 +1,46 @@
+---
+title: "Easter Island Exploration"
+format: html
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(sf)
+library(stars)
+library(tmap)
+```
+Reading in the data: 
+```{r}
+ei_points <- st_read(here("week1", "easter-island-exploration", "data", "easter_island", "ei_points.gpkg")) |> 
+  filter(type == "volcano")
+ei_elev <- read_stars(here("week1", "easter-island-exploration", "data", "easter_island", "ei_elev.tif"))
+ei_borders <- st_read(here("week1", "easter-island-exploration", "data", "easter_island", "ei_border.gpkg"))
+ei_roads <- st_read(here("week1", "easter-island-exploration", "data", "easter_island", "ei_roads.gpkg"))
+```
+Creating a single-object map with tmap()
+```{r}
+tm_shape(ei_borders) +
+  tm_borders()
+```
+Creating a multiple-object map with tmap:
+Note: to call in a new data frame you must use tm_shape
+```{r}
+tm_shape(ei_borders) +
+  tm_borders() +
+tm_shape(ei_elev) +
+  tm_raster(col.scale = tm_scale_continuous(values = terrain.colors(9)),
+             col.legend = tm_legend(title = "Elevation")) +
+tm_shape(ei_points) +
+  tm_dots(fill = "#DD403A") +
+tm_shape(ei_roads)+
+  tm_lines()+
+tm_compass()+
+tm_title(text = "Rapa Nui",
+         frame = TRUE)+
+tm_layout(text.fontfamily = "Georgia",
+          bg.color = "#88B2DF")
+  
+```
+
+
