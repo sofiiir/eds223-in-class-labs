@@ -49,6 +49,8 @@ po/*~
 rsconnect/
 
 # Ignoring week 1 data
-week1/data/
-
+week*/data/
+week*/discussion/data
+week*/lecture/data
 .DS_Store
+week1/easter-island-exploration/data/easter_island/easter-island/
