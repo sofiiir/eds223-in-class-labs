@@ -1,0 +1,76 @@
+---
+title: "columbia-mvt"
+format: html
+---
+
+```{r}
+# Loading in libraries
+library(tidyverse)
+library(sf)
+library(tmap)
+library(janitor)
+```
+
+```{r}
+# Read in the data 
+colombia <- st_read(here::here("week2", "discussion", "data", "Colombia", "Colombia.shp"))
+
+roads <- st_read(here::here("week2", "discussion", "data", "RDLINE_colombia", "RDLINE_colombia.shp"))
+
+birds <- read_csv(here::here("week2", "discussion", "data", "dataves.csv")) |> 
+  as_tibble() |> 
+  rename(long = decimal_longitude,
+         lat = decimal_latitude) |> 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
+```
+View class and geometry type
+```{r}
+class(colombia)
+class(birds)
+class(roads)
+
+unique(st_geometry_type(colombia))
+unique(st_geometry_type(birds))
+unique(st_geometry_type(roads))
+```
+Look at all the unique ecoregions in Colombia
+```{r}
+unique(colombia$N1_MacroBi)
+```
+
+Select a macro ecoregion of interest
+```{r}
+# Create a separate data frame filtering for the biome amazonia 
+col_amazonia <- colombia |> 
+  filter(N1_MacroBi == "Amazonian ") 
+
+```
+
+```{r}
+# Map the amazonian polygonas
+tm_shape(col_amazonia) +
+  tm_polygons() +
+  tm_title(text = "Colombian Amazonian Biome")
+```
+
+Looking at the CRS
+```{r}
+st_crs(col_amazonia)
+st_crs(birds)
+st_crs(roads)
+
+# View units of each object CRS
+st_crs(col_amazonia)$units
+st_crs(birds)$units
+st_crs(roads)$units
+```
+
+Removing the CRS from these files
+```{r}
+aves_df_purrr <- birds |>
+  # Extract lat & long from geometry column
+  mutate(lon = unlist(purrr::map(birds$geometry, 1)), # longitude = first component (x)
+         lat = unlist(purrr::map(birds$geometry, 2))) |> # latitude = second component (y)
+  st_drop_geometry() # Remove geometry column now that it's redundant
+```
+
