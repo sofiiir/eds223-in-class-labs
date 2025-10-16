@@ -50,7 +50,12 @@ rsconnect/
 
 # Ignoring week 1 data
 week*/data/
-week*/discussion/data
-week*/lecture/data
+week*/discussion/data/
+week*/lecture/data/
 .DS_Store
-week1/easter-island-exploration/data/easter_island/easter-island/
+week1/discussion/data/
+week1/lecture/data/
+week2/discussion/data/
+week2/lecture/data/
+week3/discussion/data/
+week3/lecture/data/
