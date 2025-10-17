@@ -1,0 +1,55 @@
+---
+title: "Practice-vector-operations"
+format: html
+---
+
+Read in libraries
+```{r}
+library(here)
+library(tidyverse)
+library(sf)
+library(tmap)
+```
+```{r}
+sb_protected_areas <- st_read(here("week3", "discussion","data", "cpad_super_units_sb.shp")) |>  
+  st_transform("ESRI:102009")
+
+sb_city_boundaries <- st_read(here("week3", "discussion","data", "sb_city_boundaries_2003.shp")) |> 
+  st_transform("ESRI:102009")
+
+sb_county_boundary <- st_read(here("week3", "discussion","data", "sb_county_boundary_2020.shp")) |> 
+  st_transform("ESRI:102009")
+
+aves <- st_read(here("week3", "discussion","data", "aves_observations_2020_2024.shp")) |> 
+  st_transform("ESRI:102009")
+```
+```{r}
+# Spatial filter aves in protected areas in Santa Barbara County
+ave_sb_county <- st_filter(aves, sb_protected_areas, .predicate = st_within)
+
+nrow(ave_sb_county)
+```
+```{r}
+tm_shape(sb_county_boundary)+
+  tm_polygons() +
+tm_shape(sb_protected_areas) +
+  tm_polygons(fill = "forestgreen") +
+tm_shape(ave_sb_county)+
+  tm_dots()
+```
+
+```{r}
+# Spatial join aves in protected areas in Santa Barbara County
+ave_sb_county <- st_join(aves, sb_protected_areas, join = st_within)
+
+nrow(ave_sb_county)
+```
+```{r}
+tm_shape(sb_county_boundary)+
+  tm_polygons() +
+tm_shape(sb_protected_areas) +
+  tm_polygons() +
+tm_shape(ave_sb_county)+
+  tm_dots()
+```
+
