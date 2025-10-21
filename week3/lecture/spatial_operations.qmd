@@ -119,7 +119,7 @@ c_height1 <- nz_height[canterbury, ] # Automatically finds the intersection
 By default bracket subsetting will filter to features in `x` that intersect features in `y`. However, we can use other topological relationships by changing options.
 
 ```{r}
-# canterbury selects for rows, the space beteen the commas selects for columns
+# canterbury selects for rows, the space between the commas selects for columns
 c_height_disjoint <- nz_height[canterbury, ,op = st_disjoint] 
 
 # Check that intersect is opposite of disjoin 
