@@ -1,0 +1,102 @@
+---
+title: "Raster Manipulations"
+format: html
+---
+
+```{r}
+# Load libraries
+library(tidyverse)
+library(spData)
+library(spDataLarge)
+library(sf)
+library(stars)
+library(terra)
+```
+```{r}
+# Read in the data
+dem <- terra::rast(system.file("raster/dem.tif", package = "spDataLarge"))
+landsat <- terra::rast(system.file("raster/landsat.tif", package = "spDataLarge"))
+srtm <- terra::rast(system.file("raster/srtm.tif", package = "spDataLarge"))
+```
+# 1. Explore elevation of the Mt. Mongon Peru
+```{r}
+boxplot(dem,
+        main = "Elevation data",
+        ylab = "Value")
+```
+
+```{r}
+hist(dem,
+     main = "Elevation Distribtuion",
+       xlab = "Value")
+```
+```{r}
+# define a reclassification matrix
+rcl <- matrix(c(-Inf, 300, 0, # values -Inf to 300 = 0
+                300, 500, 1,  # values 300 to 500 = 1
+                500, Inf, 2), # values 500 to Inf = 2
+              ncol = 3, byrow = TRUE)
+
+# apply the matrix to reclassify the raster, making all cells 0 or 1 or 2
+dem_rcl <- terra::classify(dem, rcl = rcl)
+
+# assign labels to the numerical categories
+levels(dem_rcl) <- tibble::tibble(id = 0:2, 
+                                  cats = c("low", "medium", "high"))
+
+# calculate mean elevation for each category using original DEM values
+elevation_mean <- terra::zonal(dem, dem_rcl, fun = "mean")
+elevation_mean
+```
+# 3. Explore NDVI and NDWI at Zion National Park 
+
+```{r}
+scale_factor <- 0.0000275
+offset <- 0
+
+scale_function <- function(x) {
+  x * scale_factor + offset
+}
+
+landsat_scaled <- terra::app(landsat, fun = scale_function)
+```
+
+```{r}
+# Define NDVI red
+ndvi_fun <- function(nir, red){
+  (nir - red)/(nir + red)
+}
+
+# Define NDWI green
+ndwi_fun <- function(green, nir){
+  (green - nir)/(green + nir)
+}
+
+# Apply NDVI function landsat bands 3 & 4
+ndvi_rast <- lapp(landsat[[c(4, 3)]], fun = ndvi_fun)
+
+# Apply NDWI function landsat bands 2 & 4
+ndwi_rast <- lapp(landsat[[c(2, 4)]], fun = ndwi_fun)
+```
+
+Plot data to visualize difference in NDWI and NVDI
+```{r}
+plot(ndwi_rast,
+     main = "Zion National Park NDWI")
+```
+```{r}
+plot(ndvi_rast,
+     main = "Zion National Park NDVI")
+```
+
+```{r}
+combine <- c(ndvi_rast, ndwi_rast) # Stack rasters
+
+plot(combine, main = c("NDVI", "NDWI")) # Plot
+```
+
+```{r}
+# Calculate correlation between raster layers 
+terra::layerCor(combine, fun = cor)
+```
+
