@@ -120,7 +120,6 @@ austria <- geodata::elevation_30s(country = "AUT", path = tempdir())
 switzerland <- geodata::elevation_30s(country = "CHE", path = tempdir())
 
 # Merge Austria and Switzerland rasters
-
 merged <- merge(austria, switzerland)
 
 ```
@@ -251,9 +250,9 @@ clip <- rast(xmin = -113.3,
              ymin =37.2, 
              ymax = 37.9,
              resolution = 0.3,
-             vals = 1)
+             vals = 1) # give each cell a value of one
 
-# Select vlaues that fall withing smaller extent
+# Select values that fall withing smaller extent
 zion_elevation_clip <- zion_elevation[clip]
 
 # Verify that output has fewer values than original
