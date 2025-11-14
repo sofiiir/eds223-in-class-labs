@@ -1,0 +1,126 @@
+---
+title: "nederland-co-fires"
+format: html
+---
+
+```{r}
+#| output: false
+
+# read in libraries
+library(tidyverse)
+library(sf)
+library(terra)
+library(tmap)
+library(tmaptools)
+```
+
+```{r}
+# Set directory for folder
+pre_fire_dir <- here::here("week6", "discussion", "data", "LC80340322016189-SC20170128091153")
+
+# Create a list of all images that have the extension .tif and contain the word band
+pre_fire_bands <- list.files(pre_fire_dir,
+                             pattern = glob2rx("*band*.tif$"),
+                             full.names = TRUE)
+# Create a raster stack
+pre_fire_rast <- rast(pre_fire_bands)
+
+# Read mask raster
+pre_mask <- rast(here::here("week6", "discussion", "data", "LC80340322016189-SC20170128091153", "LC80340322016189LGN00_cfmask_crop.tif"))
+```
+
+```{r}
+# Set directory for folder
+post_fire_dir <- here::here("week6", "discussion", "data", "LC80340322016205-SC20170127160728")
+
+# Create a list of all images that have the extension .tif and contain the word band
+post_fire_bands <- list.files(post_fire_dir,
+                             pattern = glob2rx("*band*.tif$"),
+                             full.names = TRUE)
+# Create a raster stack
+post_fire_rast <- rast(post_fire_bands)
+
+# Read mask raster
+post_mask <- rast(here::here("week6", "discussion", "data", "LC80340322016205-SC20170127160728", "LC80340322016205LGN00_cfmask_crop.tif"))
+```
+
+#### Function to calculate the normalized burn ratio (NBR):
+```{r}
+nbr_fun <- function(nir, swir2){
+    (nir - swir2)/(nir + swir2)
+}
+```
+
+```{r}
+names(pre_fire_rast)
+```
+```{r}
+band_names <- c("coastal_aerosol", "blue", "green", "red", "nir","swir1", "swi2")
+```
+
+
+```{r}
+# rename the bands in the rast 
+names(pre_fire_rast) <- band_names
+names(post_fire_rast) <- band_names
+```
+
+```{r}
+# mask out clouds and shadows
+pre_mask[pre_mask > 0] <-NA
+
+# subset raster based on mask
+pre_fire_rast <- mask(pre_fire_rast, mask = pre_mask)
+```
+
+```{r}
+plot(pre_fire_rast)
+```
+
+```{r}
+# mask out clouds and shadows
+post_mask[post_mask > 0] <- NA
+
+# subset raster based on mask
+post_fire_rast <- mask(post_fire_rast, mask = post_mask)
+
+plot(post_fire_rast)
+```
+## Plot true and false color composites 
+### Pre-fire maps
+```{r}
+plotRGB(pre_fire_rast, r = 4, g = 3, b = 2, stretch = "lin", colNA = "black")
+```
+```{r}
+plotRGB(post_fire_rast, r = 4, g = 3, b = 2, stretch = "lin", colNA = "black")
+```
+### Post fire Maps
+```{r}
+plotRGB(pre_fire_rast, r = 7, g = 5, b = 2, stretch = "lin", colNA = "black")
+```
+```{r}
+plotRGB(post_fire_rast, r = 7, g = 5, b = 2, stretch = "lin", colNA = "black")
+```
+## Calcultate the normalized burn ratio (NBR)
+```{r}
+# apply NBR function to landsat bands 3 & 4
+pre_nbr_rast <- lapp(pre_fire_rast[[c(5,7)]], fun = nbr_fun)
+
+plot(pre_nbr_rast, main = "Cold Springs Pre-Fire NBR", colNA = "black")
+```
+```{r}
+post_nbr_rast <- terra::lapp(post_fire_rast[[c(5, 7)]], fun = nbr_fun)
+
+plot(post_nbr_rast, main = "Cold Springs Post-Fire NBR", colNA = "black")
+```
+
+```{r}
+diff_nbr <- pre_nbr_rast - post_nbr_rast
+
+tm_shape(diff_nbr) +
+  tm_raster(style = "equal", n = 6, 
+            palette = get_brewer_pal("YlOrRd", n = 6, plot = FALSE),
+            title = "Difference NBR (dNBR)", colorNA = "black") +
+  tm_layout(legend.outside = TRUE)
+```
+
