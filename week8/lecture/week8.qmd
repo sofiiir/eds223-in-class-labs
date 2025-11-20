@@ -396,6 +396,19 @@ landsat_df |>
   arrange(cluster) |> 
   knitr::kable(digits = 2, 
                caption = "Mean spectral values by Cluster")
+# create a raster
+
+# Best guesses 
+# cluster 1 = soil
+# cluster 2 = urban
+# cluster 3 = green vegetation
+# cluster 4 = water
+
+# set category labels
+levels(SB_classification_kmeans) <- data.frame(
+  cluster = 1:4,
+  landcover = c("soil/dead grass", "urban", "green vegetation", "water")
+)
 
 ```
 
@@ -404,7 +417,18 @@ landsat_df |>
 Now we can plot the results and check out our land cover map!
 
 ```{r}
+kmeans_plot <- tm_shape(SB_classification_kmeans) +
+  tm_raster(
+    col.scale = tm_scale(
+      values = c("#F2DDA4", "#7E8987", "#8DB580", "#6A8EAE"),
+      labels = c("soil/dead grass", "urban","green vegetation",  "water")
+    ),
+    col.legend = tm_legend("Landcover type")
+  ) +
+  tm_title(text = "K-Means Landcover Classification") +
+  tm_layout(legend.position = c("left", "bottom"))
 
+kmeans_plot
 ```
 
 ## 6. Compare our decision tree and kmeans algorithm classification
@@ -413,6 +437,6 @@ Now let's compare our two approaches side-by-side! The decision tree used labele
 
 
 ```{r}
-
+tmap_arrange(dt_plot, kmeans_plot , nrow =1)
 ```
 
