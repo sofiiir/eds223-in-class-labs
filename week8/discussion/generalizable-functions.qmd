@@ -1,0 +1,42 @@
+---
+title: "generalizable-functions"
+format: html
+---
+
+```{r}
+# load in libraries
+library(terra)
+library(sf)
+library(tidyverse)
+library(here)
+library(tmap)
+```
+
+Create function to compute NDVI.
+```{r}
+ndvi_fun <- function(nir, red){
+  (nir - red) / (nir + red)
+}
+```
+
+Load in the first scene collected on June 12, 2018.
+```{r}
+landsat_20180612 <- rast(here::here("week8","discussion","data", "landsat_20180612.tif"))
+```
+
+Update the names of the layers to match the spectral bands they correspond to.
+```{r}
+names(landsat_20180612) <- c("blue", "green", "red", "NIR", "SWIR1", "SWIR2")
+```
+
+```{r}
+ndvi_20180612 <- lapp(landsat_20180612[[c(4, 3)]], fun = ndvi_fun)
+```
+
+```{r}
+tm_shape(ndvi_20180612) +
+  tm_raster(col.legend  = tm_legend("NDVI")) +
+  tm_layout(legend.outside.position = "right")
+```
+
+
